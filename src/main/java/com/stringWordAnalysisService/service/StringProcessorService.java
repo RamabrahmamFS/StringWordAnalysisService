@@ -1,5 +1,7 @@
 package com.stringWordAnalysisService.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +22,21 @@ public class StringProcessorService {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	private static final String STUDENT_API_BASE_URL = "http://localhost:8091/api/analyze";
+	private static final String API_BASE_URL = "http://localhost:8091/api/analyze";
 
-	public ResponseObject processString(String input) {
-		Optional<StringRecord> existingRecord = repository.findByInputString(input);
+	public ResponseObject processString(Map<String, String> input) {
+		Optional<StringRecord> existingRecord = repository.findByInputString(input.get("input"));
 		if (existingRecord.isPresent()) {
 			throw new IllegalStateException("String already processed");
 		}
-
-		ResponseEntity<ResponseObject> response = restTemplate.postForEntity(STUDENT_API_BASE_URL, input,
+		Map<String, String> request = new HashMap<>();
+		ResponseEntity<ResponseObject> response = restTemplate.postForEntity(API_BASE_URL, input,
 				ResponseObject.class);
 		
 		ResponseObject result = response.getBody();
 
 		StringRecord record = new StringRecord();
-		record.setInputString(input);
+		record.setInputString(input.get("input"));
 		record.setWordCount(result.wordCount());
 		record.setHasPalindrome(result.hasPalindrome());
 		record.setPalindromeWords(String.join(",", result.palindromeWords()));

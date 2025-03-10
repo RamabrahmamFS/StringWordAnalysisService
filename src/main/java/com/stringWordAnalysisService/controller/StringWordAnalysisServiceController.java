@@ -9,18 +9,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.stringWordAnalysisService.service.StringProcessorService;
 import com.stringWordAnalysisService.service.dto.ResponseObject;
 
+import java.util.Map;
 
 
 @RestController
-@RequestMapping("/api/analyze")
+@RequestMapping("/api/process")
 public class StringWordAnalysisServiceController {
 	
 	@Autowired
 	private  StringProcessorService stringProcessorService;
 
 	@PostMapping
-	public ResponseObject process(@RequestBody String input) {
-		return stringProcessorService.processString(input);
+	public ResponseObject process(@RequestBody Map<String, String> request) {
+		return stringProcessorService.processString(request);
 	}
 	
 	
