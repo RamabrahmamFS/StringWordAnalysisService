@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.stringWordAnalysisService.entity.StringRecord;
+import com.stringWordAnalysisService.exception.StringProcessorException;
 import com.stringWordAnalysisService.repository.StringRecordRepository;
 import com.stringWordAnalysisService.service.dto.ResponseObject;
 
@@ -27,7 +28,7 @@ public class StringProcessorService {
 	public ResponseObject processString(Map<String, String> input) {
 		Optional<StringRecord> existingRecord = repository.findByInputString(input.get("input"));
 		if (existingRecord.isPresent()) {
-			throw new IllegalStateException("String already processed");
+			throw new StringProcessorException("String already processed");
 		}
 		Map<String, String> request = new HashMap<>();
 		ResponseEntity<ResponseObject> response = restTemplate.postForEntity(API_BASE_URL, input,
