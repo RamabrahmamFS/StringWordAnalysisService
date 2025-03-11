@@ -51,10 +51,10 @@ public class WordAnalysisServiceTest { @InjectMocks
     @Test
     void processString_shouldReturnResponseObject_whenStringIsNew() {
         // Arrange
-        String input = "racecar";
+        String input = "madam racecar";
         Map<String, String> inputMap = Map.of("input", input);
 
-        ResponseObject mockResponse = new ResponseObject(UUID.randomUUID(), 3, true, List.of("madam", "racecar"));
+        ResponseObject mockResponse = new ResponseObject(UUID.randomUUID(), 2, true, List.of("madam", "racecar"));
         ResponseEntity<ResponseObject> mockEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
 
         when(repository.findByInputString(input)).thenReturn(Optional.empty());
@@ -65,7 +65,7 @@ public class WordAnalysisServiceTest { @InjectMocks
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.wordCount()).isEqualTo(7);
+        assertThat(result.wordCount()).isEqualTo(2);
         assertThat(result.hasPalindrome()).isTrue();
         assertThat(result.palindromeWords()).containsExactly("racecar");
 
