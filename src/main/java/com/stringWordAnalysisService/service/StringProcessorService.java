@@ -1,12 +1,12 @@
 package com.stringWordAnalysisService.service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.stringWordAnalysisService.entity.StringRecord;
@@ -18,7 +18,7 @@ import com.stringWordAnalysisService.service.dto.ResponseObject;
 public class StringProcessorService {
 
 	@Autowired
-	private  StringRecordRepository repository;
+	private StringRecordRepository repository;
 
 	@Autowired
 	private RestTemplate restTemplate;
@@ -26,23 +26,40 @@ public class StringProcessorService {
 	private static final String API_BASE_URL = "http://localhost:8091/api/analyze";
 
 	public ResponseObject processString(Map<String, String> input) {
-		Optional<StringRecord> existingRecord = repository.findByInputString(input.get("input"));
+
+		String inputString = input.get("input");
+		
+		 if (inputString == null || inputString.trim().isEmpty()) {
+	        	throw new StringProcessorException("Input string must not be empty");
+	        }
+
+		Optional<StringRecord> existingRecord = repository.findByInputString(inputString);
 		if (existingRecord.isPresent()) {
 			throw new StringProcessorException("String already processed");
 		}
-		Map<String, String> request = new HashMap<>();
-		ResponseEntity<ResponseObject> response = restTemplate.postForEntity(API_BASE_URL, input,
-				ResponseObject.class);
-		
-		ResponseObject result = response.getBody();
 
-		StringRecord record = new StringRecord();
-		record.setInputString(input.get("input"));
-		record.setWordCount(result.wordCount());
-		record.setHasPalindrome(result.hasPalindrome());
-		record.setPalindromeWords(String.join(",", result.palindromeWords()));
+		try {
+			ResponseEntity<ResponseObject> response = restTemplate.postForEntity(API_BASE_URL, input,
+					ResponseObject.class);
+			
+			if (response== null || !response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new StringProcessorException("Failed to analyze string.");
+            }
 
-		repository.save(record);
-		return result;
+			ResponseObject result = response.getBody();
+
+			StringRecord record = new StringRecord();
+			record.setInputString(input.get("input"));
+			record.setWordCount(result.wordCount());
+			record.setHasPalindrome(result.hasPalindrome());
+			record.setPalindromeWords(String.join(",", result.palindromeWords()));
+
+			repository.save(record);
+			
+			return result;
+			
+		} catch (RestClientException ex) {
+			throw new StringProcessorException("Error communicating with analysis service: " + ex.getMessage());
+		}
 	}
 }
