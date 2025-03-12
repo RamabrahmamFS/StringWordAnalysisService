@@ -32,7 +32,7 @@ public class StringProcessorService {
 		 if (inputString == null || inputString.trim().isEmpty()) {
 	        	throw new StringProcessorException("Input string must not be empty");
 	        }
-
+        // we can implement cache here
 		Optional<StringRecord> existingRecord = repository.findByInputString(inputString);
 		if (existingRecord.isPresent()) {
 			throw new StringProcessorException("String already processed");
